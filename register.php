@@ -1,36 +1,80 @@
 <?php
 require 'database.php';
+require 'auth.php';
 
-session_start();
-
-// If already logged in, redirect to dashboard
-if (isset($_SESSION['user_id'])) {
-    header("Location: login.php");
-    exit;
-}
+$errors = [];
+$success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $name = $_POST['name'];
-    $email = $_POST['email'];
-    $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
+    $name = trim($_POST['name']);
+    $email = trim($_POST['email']);
+    $password = $_POST['password'];
+    $confirm_password = $_POST['confirm_password'];
 
-    $check = $conn->prepare("SELECT id FROM users WHERE email = ?");
-    $check->bind_param("s", $email);
-    $check->execute();
-    $check->store_result();
-
-    if ($check->num_rows > 0) {
-        echo "<div class='alert alert-danger text-center mt-3'>Email already exists.</div>";
-        exit;
+    // Name validation
+    if (empty($name)) {
+        $errors[] = "Name is required";
+    } elseif (strlen($name) < 2) {
+        $errors[] = "Name must be at least 2 characters long";
+    } elseif (strlen($name) > 50) {
+        $errors[] = "Name must be less than 50 characters";
+    } elseif (!preg_match("/^[a-zA-Z\s]+$/", $name)) {
+        $errors[] = "Name can only contain letters and spaces";
     }
 
-    $stmt = $conn->prepare("INSERT INTO users (name, email, password, created_at, updated_at) VALUES (?, ?, ?, NOW(), NOW())");
-    $stmt->bind_param("sss", $name, $email, $password);
+    // Email validation
+    if (empty($email)) {
+        $errors[] = "Email is required";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors[] = "Please enter a valid email address";
+    } elseif (strlen($email) > 100) {
+        $errors[] = "Email must be less than 100 characters";
+    }
 
-    if ($stmt->execute()) {
-        $_SESSION['registered'] = true;
-        header("Location: register.php");
-        exit;
+    // Password validation
+    if (empty($password)) {
+        $errors[] = "Password is required";
+    } elseif (strlen($password) < 6) {
+        $errors[] = "Password must be at least 6 characters long";
+    } elseif (strlen($password) > 50) {
+        $errors[] = "Password must be less than 50 characters";
+    } elseif (!preg_match("/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/", $password)) {
+        $errors[] = "Password must contain at least one uppercase letter, one lowercase letter, and one number";
+    }
+
+    // Confirm password validation
+    if (empty($confirm_password)) {
+        $errors[] = "Please confirm your password";
+    } elseif ($password !== $confirm_password) {
+        $errors[] = "Passwords do not match";
+    }
+
+    // Check if email already exists
+    if (empty($errors)) {
+        $check = $conn->prepare("SELECT id FROM users WHERE email = ?");
+        $check->bind_param("s", $email);
+        $check->execute();
+        $check->store_result();
+
+        if ($check->num_rows > 0) {
+            $errors[] = "Email already exists. Please use a different email or login.";
+        }
+    }
+
+    // If no errors, proceed with registration
+    if (empty($errors)) {
+        $hashed_password = password_hash($password, PASSWORD_BCRYPT);
+        
+        $stmt = $conn->prepare("INSERT INTO users (name, email, password, created_at, updated_at) VALUES (?, ?, ?, NOW(), NOW())");
+        $stmt->bind_param("sss", $name, $email, $hashed_password);
+
+        if ($stmt->execute()) {
+            // Redirect to login.php with a success message
+            header("Location: login.php?registered=1");
+            exit;
+        } else {
+            $errors[] = "Registration failed. Please try again.";
+        }
     }
 }
 ?>
@@ -71,48 +115,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .btn-primary:hover {
             background-color: #1aa34a;
         }
+
+        .alert {
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .password-requirements {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
+        }
     </style>
 </head>
 
 <body>
 
-    <?php if (isset($_SESSION['registered'])): ?>
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <script>
-            Swal.fire({
-                icon: 'success',
-                title: 'Registered!',
-                text: 'Registration successful. Redirecting to login...',
-                confirmButtonText: 'OK'
-            }).then(() => {
-                window.location.href = 'login.php';
-            });
-        </script>
-        <?php unset($_SESSION['registered']); ?>
-    <?php endif; ?>
-
-
     <div class="card bg-white">
         <h2 class="mb-4">Register your account</h2>
+        
+        <?php if (!empty($errors)): ?>
+            <div class="alert alert-danger">
+                <ul class="mb-0">
+                    <?php foreach ($errors as $error): ?>
+                        <li><?= htmlspecialchars($error) ?></li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php endif; ?>
+
         <form method="post" class="bg-white p-4 rounded shadow-sm">
             <div class="mb-3">
-                <label>Name</label>
-                <input type="text" name="name" class="form-control" required>
+                <label>Full Name</label>
+                <input type="text" name="name" class="form-control" value="<?= htmlspecialchars($_POST['name'] ?? '') ?>" required>
+                <div class="password-requirements">Enter your full name (letters and spaces only)</div>
             </div>
+            
             <div class="mb-3">
                 <label>Email</label>
-                <input type="email" name="email" class="form-control" required>
+                <input type="email" name="email" class="form-control" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required>
             </div>
+            
             <div class="mb-3">
                 <label>Password</label>
                 <input type="password" name="password" class="form-control" required>
+                <div class="password-requirements">
+                    • Minimum 6 characters<br>
+                    • Must contain uppercase, lowercase, and number
+                </div>
             </div>
-            <button type="submit" class="btn btn-primary">Register</button>
-            <a href="login.php" class="btn btn-link">Already have an account?</a>
+            
+            <div class="mb-3">
+                <label>Confirm Password</label>
+                <input type="password" name="confirm_password" class="form-control" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary w-100">Register</button>
+            <a href="login.php" class="btn btn-link w-100">Already have an account?</a>
         </form>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 
 </body>
 

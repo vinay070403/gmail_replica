@@ -1,6 +1,14 @@
 <?php
+session_start();
+
+// If user is logged in, redirect to inbox
+if (isset($_SESSION['user_id'])) {
+    header("Location: admin/inbox.php");
+    exit;
+}
+
+// If not logged in, show login form
 require 'database.php';
-require 'auth.php';
 
 $errors = [];
 $email = '';
@@ -46,13 +54,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
-<!-- Login Form -->
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
-    <title>Login</title>
+    <title>Login - Gmail Clone</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
@@ -129,4 +136,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 </body>
 
-</html>
+</html> 

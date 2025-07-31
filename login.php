@@ -1,9 +1,13 @@
 <?php
 require 'database.php';
-require 'auth.php';
+//require 'auth.php';
 
 $errors = [];
 $email = '';
+
+
+
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email']);
@@ -33,6 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->fetch();
 
             if (password_verify($password, $hashed_password)) {
+                session_start();
                 $_SESSION['user_id'] = $id;
                 $_SESSION['user_name'] = $name;
                 header("Location: admin/inbox.php");

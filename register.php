@@ -1,6 +1,6 @@
 <?php
 require 'database.php';
-require 'auth.php';
+//require 'auth.php';
 
 $errors = [];
 $success = '';

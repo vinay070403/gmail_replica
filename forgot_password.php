@@ -7,10 +7,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     date_default_timezone_set('Asia/Kolkata'); // Or your actual zone
     $expiry = date('Y/m/d H:i:s', strtotime('+5 hour'));
 
-    echo "Server time now: " . date('Y-m-d H:i:s') . "<br>";
-    echo "Expiry time: " . $expiry . "<br>";
-
-
     $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();

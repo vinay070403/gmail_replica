@@ -1,4 +1,5 @@
 <?php
+<<<<<<< HEAD
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -353,3 +354,82 @@ if (session_status() === PHP_SESSION_NONE) {
             </a>
         </div>
     </div>
+=======
+// Make sure session is started and user info is fetched before this
+require_once '../config/database.php';
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: ../auth/login.php");
+    exit;
+}
+
+$user_id = $_SESSION['user_id'];
+$stmt = $pdo->prepare("SELECT name, email FROM users WHERE id = ?");
+$stmt->execute([$user_id]);
+$user = $stmt->fetch();
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Gmail Replica</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <script src="../assets/js/script.js"></script>
+
+
+</head>
+
+<body>
+
+    <!-- TOP HEADER BAR -->
+    <div class="topbar">
+        <div class="left">
+            <i class="fas fa-bars menu-icon"></i>
+            <img src="../assets/images/gmail-logo.png" alt="Gmail Logo" class="gmail-logo">
+            <span class="gmail-title">Gmail</span>
+        </div>
+        <div class="center">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search mail">
+                <i class="fas fa-sliders-h filter-icon"></i>
+            </div>
+        </div>
+        <div class="right">
+            <i class="fas fa-question-circle"></i>
+            <i class="fas fa-cog"></i>
+            <i class="fas fa-moon"></i>
+            <i class="fas fa-th"></i>
+            <div class="user-menu-wrapper">
+                <div class="user-avatar" onclick="toggleMenu()"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAACXBIWXMAAAsTAAALEwEAmpwYAAABoUlEQVR4nO2WsUoDQRCGP7BSyyiiJiqClT5EsBQNES30FdTE1xCsLIOawiiIhaaJsdHXMAqCCGJttDAxIbIwkSVcdid3Ihb+MLAs9+1/M7e7c/CvP6gJIANcARXgXaIic1tA4icNx4Ec0ABanmgCZ8BUVNM08KYw7IwqkAprui0Z9GpqZ58Nk2kzgqltrs487invPbAADAIjwLGi7GMa40PHInVgJoCZB2oObl9zZFy7t+hgiw6uIZXsqoynbLsOdsfDbrqMyx4472DzHrbkMr7zwAUHW/CwFZdx1QNfA30BnJm7Uezu0MYmVgK4VQVXjVJqEw9AzGJiMteKUuqyYgETSYtJKpmSy3hLscAjMGQxZvyk4DZcxokuF4i5lU7kDu8P4MzcsjxTD+A/fReI0UEH9AzMotcc8NKxRk7b+O3dHaavpi3+FRjVgimrLZprtFdlhTVrLIWB2+bn0kB8mgQuLNMwL/2debvsH8ApsAZMAwMSZrwu/1o1q7yLRNQwsCc703dkTJZHvXxTjeLS2i6BW/lLeZNxSc6p98j8i9/WF3EwRr6LVHl0AAAAAElFTkSuQmCC" alt="user-male-circle"></div>
+                <div class="user-dropdown" id="userDropdown">
+                    <span><?php echo htmlspecialchars($user['name']); ?></span>
+                    <a href="profile.php">Profile</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Action Bar -->
+    <!-- <div class="top-action-bar">
+    <input type="checkbox" id="select-all">
+
+    <button class="icon-btn" title="Refresh" onclick="location.reload();">🔄</button>
+
+    <form method="post" action="bulk-delete.php" style="display:inline;">
+        <button class="icon-btn" type="submit" name="delete" title="Delete Selected">🗑️</button>
+    </form>
+
+    <div class="dropdown">
+        <button class="icon-btn" title="More options">⋮</button>
+        <div class="dropdown-content"> -->
+    <!-- <button type="button" onclick="markAllRead()">Mark all as read</button>
+        </div>
+    </div>
+</div> -->
+
+
+    <div class="container">
+>>>>>>> 139356b (add)

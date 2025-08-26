@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <div class="sidebar" id="sidebar">
 
 
@@ -33,3 +34,41 @@
         <span>Labels</span>
     </div>
 </div>
+=======
+<div class="sidebar">
+    <button class="compose-btn" onclick="window.location.href='compose.php'">✉️ Compose</button>
+
+    <ul class="nav-links">
+        <li><a href="inbox.php">📥 Inbox</a></li>
+        <li><a href="sent.php">📤 Sent</a></li>
+        <li><a href="favorite.php">⭐ Starred</a></li>
+        <li><a href="trash.php">🗑️ Trash</a></li>
+        <li><a href="labels.php">🏷️ Manage Labels</a></li>
+        <li><a href="../logout.php">🚪 Logout</a></li>
+    </ul>
+
+    <div class="labels-section">
+        <strong>📌 Your Labels</strong>
+        <ul>
+            <?php
+            require_once '../config/database.php';
+            $user_id = $_SESSION['user_id'];
+            $labelStmt = $pdo->prepare("SELECT id, name FROM labels WHERE user_id = ?");
+            $labelStmt->execute([$user_id]);
+            $labels = $labelStmt->fetchAll();
+
+            if ($labels):
+                foreach ($labels as $label): ?>
+                    <li>
+                        <a href="inbox.php?label=<?php echo $label['id']; ?>">
+                            🏷️ <?php echo htmlspecialchars($label['name']); ?>
+                        </a>
+                    </li>
+                <?php endforeach;
+            else: ?>
+                <li><em>No labels</em></li>
+            <?php endif; ?>
+        </ul>
+    </div>
+</div>
+>>>>>>> 139356b (add)

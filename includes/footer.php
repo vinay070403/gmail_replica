@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     // Toggle sidebar on mobile and desktop
@@ -61,3 +62,10 @@
 </body>
 
 </html>
+=======
+</div> <!-- End of main-content -->
+</div> <!-- End of container -->
+<script src="../assets/js/script.js"></script>
+</body>
+</html>
+>>>>>>> 139356b (add)

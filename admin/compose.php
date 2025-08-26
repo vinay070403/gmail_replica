@@ -1,4 +1,4 @@
-<?php
+<<<<<<< HEAD <?php
 //require 'auth2.php';
 require '../database.php';
 //include('../includes/header.php');
@@ -49,19 +49,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     //header("Location: sent.php");
     exit;
 }
-?>
-
-
-<div class="container py-4">
+?> <div class="container py-4">
     <h2>New Email</h2>
     <form method="POST">
         <div class="mb-3">
             <label for="recipients">To:</label>
             <select name="recipients[]" id="recipients" class="form-select" multiple required>
                 <?php while ($user = $users_result->fetch_assoc()): ?>
-                    <option value="<?= $user['id'] ?>">
-                        <?= htmlspecialchars($user['name']) ?> (<?= $user['email'] ?>)
-                    </option>
+                <option value="<?= $user['id'] ?>">
+                    <?= htmlspecialchars($user['name']) ?> (<?= $user['email'] ?>)
+                </option>
                 <?php endwhile; ?>
             </select>
 
@@ -77,9 +74,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <select name="cc[]" id="cc" class="select-user" multiple>
                     <?php mysqli_data_seek($users_result, 0);
                     while ($user = $users_result->fetch_assoc()): ?>
-                        <option value="<?= $user['id'] ?>">
-                            <?= htmlspecialchars($user['name']) ?> (<?= $user['email'] ?>)
-                        </option>
+                    <option value="<?= $user['id'] ?>">
+                        <?= htmlspecialchars($user['name']) ?> (<?= $user['email'] ?>)
+                    </option>
                     <?php endwhile; ?>
                 </select>
             </div>
@@ -90,9 +87,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <select name="bcc[]" id="bcc" class="form-select" multiple>
                     <?php mysqli_data_seek($users_result, 0);
                     while ($user = $users_result->fetch_assoc()): ?>
-                        <option value="<?= $user['id'] ?>">
-                            <?= htmlspecialchars($user['name']) ?> (<?= $user['email'] ?>)
-                        </option>
+                    <option value="<?= $user['id'] ?>">
+                        <?= htmlspecialchars($user['name']) ?> (<?= $user['email'] ?>)
+                    </option>
                     <?php endwhile; ?>
                 </select>
             </div>
@@ -111,5 +108,103 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <button type="submit" class="btn btn-primary">Send</button>
         <a href="inbox.php" class="btn btn-secondary">Cancel</a>
     </form>
-</div>
-<?php include('../includes/footer.php'); ?>
+    </div>
+    <?php include('../includes/footer.php'); ?>
+    =======
+    <?php include '../includes/auth.php'; ?>
+    <?php include '../includes/header.php'; ?>
+    <?php include '../includes/sidebar.php'; ?>
+    <?php require_once '../config/database.php'; ?>
+
+    <?php
+// Handle form submission
+$success = '';
+$error = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (
+        isset($_POST['receiver_email']) &&
+        isset($_POST['subject']) &&
+        isset($_POST['message'])
+    ) {
+        $receiver_email = $_POST['receiver_email'];
+        $subject = $_POST['subject'];
+        $message = $_POST['message'];
+        $user_id = $_SESSION['user_id'];
+
+        // Find receiver by email
+        $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
+        $stmt->execute([$receiver_email]);
+        $receiver = $stmt->fetch();
+
+        if ($receiver) {
+            $receiver_id = $receiver['id'];
+
+            // Insert into mails table
+            $stmt = $pdo->prepare("INSERT INTO mails (user_id, subject, message, created_at, updated_at) VALUES (?, ?, ?, NOW(), NOW())");
+            $stmt->execute([$user_id, $subject, $message]);
+            $mail_id = $pdo->lastInsertId();
+
+            echo "Mail inserted with ID: " . $mail_id . "<br>";
+
+            // Insert into mail_recipients table
+            $stmt = $pdo->prepare("INSERT INTO mail_recipients (mail_id, receiver_id, type, is_read, is_favorite, created_at) VALUES (?, ?, 'inbox', 0, 0, NOW())");
+            $stmt->execute([$mail_id, $receiver_id]);
+
+            echo "Receiver ID: " . $receiver_id . "<br>";
+
+            // Optional: Handle attachment
+            if (isset($_FILES['attachment']) && $_FILES['attachment']['error'] === UPLOAD_ERR_OK) {
+                $file_tmp = $_FILES['attachment']['tmp_name'];
+                $file_name = basename($_FILES['attachment']['name']);
+                $upload_dir = '../assets/uploads/';
+                $target_file = $upload_dir . $file_name;
+
+                // Create folder if not exists
+                if (!is_dir($upload_dir)) {
+                    mkdir($upload_dir, 0777, true);
+                }
+
+                if (move_uploaded_file($file_tmp, $target_file)) {
+                    $stmt = $pdo->prepare("INSERT INTO mail_attachments (mail_id, file_name) VALUES (?, ?)");
+                    $stmt->execute([$mail_id, $file_name]);
+                }
+            }
+
+            $success = "Mail sent successfully.";
+        } else {
+            $error = "Receiver email not found.";
+        }
+    } else {
+        $error = "Please fill all required fields.";
+    }
+}
+?>
+
+    <?php if ($error): ?>
+    <div class="error"><?php echo htmlspecialchars($error); ?></div>
+    <?php elseif ($success): ?>
+    <div class="success"><?php echo htmlspecialchars($success); ?></div>
+    <?php endif; ?>
+
+    <div class="compose-container">
+        <form method="post" enctype="multipart/form-data">
+            <label>To (Receiver Email):</label>
+            <input type="email" name="receiver_email" required>
+
+            <label>Subject:</label>
+            <input type="text" name="subject" required>
+
+            <label>Message:</label>
+            <textarea name="message" rows="6" required></textarea>
+
+            <label>Attachment (optional):</label>
+            <input type="file" name="attachment">
+
+            <button type="submit">Send</button>
+        </form>
+    </div>
+
+
+    <?php include '../includes/footer.php'; ?>
+    >>>>>>> 139356b (add)
